@@ -1,0 +1,12 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: webshell-lab
+resources:
+  - namespace.yaml
+  - deployment.yaml
+  - service.yaml
+  - network-policy.yaml
+images:
+  - name: webshell-lab
+    newName: registry.example.com/lab/webshell
+    newTag: "1.0.0"

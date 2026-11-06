@@ -142,8 +142,25 @@ function createShellServer({ timeoutMs = 5000, maxOutputBytes = 1024 * 1024 } = 
 if (require.main === module) {
   const host = process.env.HOST || '0.0.0.0';
   const port = Number(process.env.PORT || 3000);
-  createShellServer().listen(port, host, () => {
-    console.log(`Webshell lab listening on http://${host}:${port}`);
+  const server = createShellServer();
+  let shuttingDown = false;
+
+  function shutdown() {
+    if (shuttingDown) return;
+    shuttingDown = true;
+
+    const deadline = setTimeout(() => process.exit(1), 10_000);
+    deadline.unref();
+    server.close(() => {
+      clearTimeout(deadline);
+      process.exit(0);
+    });
+  }
+
+  process.on('SIGTERM', shutdown);
+  process.on('SIGINT', shutdown);
+  server.listen(port, host, () => {
+    console.log(`Webshell lab listening on http://${host}:${server.address().port}`);
   });
 }
 
